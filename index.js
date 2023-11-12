@@ -1,16 +1,16 @@
 require('dotenv').config()
-const { OpenAI } = require('openai')
+const { OpenAI } = require ('openai')
 const express = require('express')
 
 const app = express()
 
 app.use(express.json())
 
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY
+const openai = new OpenAI(OPENAI_API_KEY)
+
 // POST /pergunte-ao-chatgpt
 app.post('/pergunte-ao-chatgpt', async (req, res) => {
-
-    const OPENAI_API_KEY = process.env.OPENAI_API_KEY
-    const openai = new OpenAI( OPENAI_API_KEY )
 
     const { prompt } = req.body
 
@@ -24,34 +24,31 @@ app.post('/pergunte-ao-chatgpt', async (req, res) => {
         messages: [{ role: role, content: prompt}],
         model: model,
         max_tokens: max_tokens,
-        temperature: 0.7
     })
 
-    res.json({ completion: completion.choices[0].text })
-})
+    res.json({completion: completion.choices[0].message.content})
+    })
 
-app.get('/gerar-historia/:tema', async (req, res) => {
+app.post('/gerar-historia/:tema', async (req, res) => {
 
-    const OPENAI_API_KEY = process.env.OPENAI_API_KEY
-    const openai = new OpenAI( OPENAI_API_KEY )
-    const tema = req.params.tema;
+    const { tema } = req.params;
 
     // Configuração do prompt para a geração de texto
-    const prompt = `Escreva uma história infantil sobre ${tema} com no maximo 150 caracteres. Era uma vez...`
+    const prompt = `Escreva uma história infantil sobre ${tema} com 150 palavras. Era uma vez...`
     const model = 'gpt-3.5-turbo'
     const role = 'user'
+    const max_tokens = 200;
 
     try {
         // Solicitação para a API GPT-3
-        const resposta = await openai.chat.completions.create({
+        const completion = await openai.chat.completions.create({
             messages: [{ role: role, content: prompt}],
             model: model,
-            max_tokens: 150,  // Ajuste conforme necessário
-            temperature: 0.7  // Ajuste conforme necessário
+            max_tokens: max_tokens,
         })
 
         // Retorna a parte gerada da história
-        res.send(resposta.choices[0].text.trim())
+        res.json({ completion: completion.choices[0].message.content })
     } catch (error) {
         console.error(error)
         res.status(500).send('Erro ao gerar história.')
