@@ -1,6 +1,7 @@
 require('dotenv').config()
 const { OpenAI } = require ('openai')
 const express = require('express')
+var cors = require('cors')
 
 const app = express()
 
@@ -8,6 +9,8 @@ app.use(express.json())
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY
 const openai = new OpenAI(OPENAI_API_KEY)
+
+app.use(cors())
 
 // POST /pergunte-ao-chatgpt
 app.post('/pergunte-ao-chatgpt', async (req, res) => {
